@@ -1,0 +1,19 @@
+;opcode(LOADI)->regi(0)->immediate(sizeof(unsigned long))->
+;opcode(LOADI)->regi(1)->immediate(sizeof(BASE_TYPE))->
+;subroutine("lol")->
+;opcode(LOADS)->strRegi(2)->s("Hello, subroutine world!")->
+;opcode(PUSHI)->strRegi(2)->
+;syscall(WRITEL)->
+;opcode(RET)->finish()->
+
+main:
+	LOADI r0 @4
+	LOADI r1 @4
+	CALL lol
+	RET
+lol:
+	LOADS sr2 "Hello, sub world!"
+	PUSHI sr2
+	SYSCALL #WRITEL
+	RET
+CALL main

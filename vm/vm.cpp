@@ -4,12 +4,17 @@
 #include "stdafx.h"
 #include "virtuo.h"
 #include "VMException.h"
-
+#include "parser.h"
 int _tmain(int argc, _TCHAR* argv[])
 {
 	try {
-		assemblr a;
+		parser p;
 		int sz = 0;
+		/*
+		auto proggy=p.parse_file("assemble.me", sz);
+		hexDump("assemble.me parsed:", proggy, sz);
+		return 0;*/
+		assemblr a;
 		BASE_TYPE *program = a.
 			opcode(LOADI)->regi(0)->immediate(sizeof(unsigned long))->
 			opcode(LOADI)->regi(1)->immediate(sizeof(BASE_TYPE))->

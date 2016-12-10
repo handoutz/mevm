@@ -53,62 +53,22 @@ typedef enum {
 #include "trace.h"
 #include "VMException.h"
 #include <string>
+#define nxti (++i < n ? str[i] : 0)
 using namespace std;
 class subroutine_assember;
 class assemblr {
 public:
 	std::vector<BASE_TYPE> m_prog;
 
-	assemblr* s(string str) {
-#define nxti (++i < n ? str[i] : 0)
-		opcode(INLINE_STR_START);
-		int nToPad = 4 - (str.size() % 4);
-		nToPad > 0 ? str.append(nToPad, '\0') : 0;
-		int n = str.size();
-		for (int i = -1; i < (int)n - 1;) {
-			BASE_TYPE val = pack(nxti, nxti, nxti, nxti);
-			immediate(val);
-			//char* ss=unpack_str4(val);
-			//printf("i=%i, n=%i, nToPad=%i, origstr=[%s]  str=[%s]\n", i,n,nToPad,str.c_str(), ss);
-		}
-		opcode(INLINE_STR_END);
-		return this;
-	}
-	assemblr* call(char* _name) {
-		opcode(CALL)->immediate(_hash_sdbm((unsigned char*)_name));
-		return this;
-	}
-	assemblr* syscall(SYSCALLS sc) {
-		opcode(SYSCALL)->immediate(sc);
-		return this;
-	}
-	assemblr* opcode(OPCODES op) {
-		m_prog.push_back(op);
-		return this;
-	}
-	assemblr* kw(KEYWORDS kw) {
-		m_prog.push_back(kw);
-		return this;
-	}
-	assemblr* immediate(BASE_TYPE val) {
-		m_prog.push_back(val);
-		return this;
-	}
-	assemblr* regi(BASE_TYPE num) {
-		m_prog.push_back(num);
-		return this;
-	}
-	assemblr* strRegi(BASE_TYPE num) {
-		m_prog.push_back(num + ID_STRREGI_START);
-		return this;
-	}
-	assemblr* end() {
-		m_prog.push_back(ENDOP1);
-		m_prog.push_back(ENDOP2);
-		m_prog.push_back(ENDOP3);
-		m_prog.push_back(ENDOP4);
-		return this;
-	}
+	assemblr* s(string str);
+	assemblr* call(char* _name);
+	assemblr* syscall(SYSCALLS sc);
+	assemblr* opcode(OPCODES op);
+	assemblr* kw(KEYWORDS kw);
+	assemblr* immediate(BASE_TYPE val);
+	assemblr* regi(BASE_TYPE num);
+	assemblr* strRegi(BASE_TYPE num);
+	assemblr* end();
 	virtual assemblr* finish() { 
 		return this; 
 	}
