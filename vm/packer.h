@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-
+#include "StringAlgos.h"
 inline uint32_t pack_helper(uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3) {
 	return c0 | (c1 << 8) | (c2 << 16) | (c3 << 24);
 }
@@ -12,7 +12,7 @@ inline uint32_t pack(uint8_t c0, uint8_t c1, uint8_t c2, uint8_t c3) {
 template <int N>
 inline uint8_t unpack_u(uint32_t packed) {
 	// cast to avoid potential warnings for implicit narrowing conversion
-	return static_cast<uint8_t>(packed >> (N*8));
+	return static_cast<uint8_t>(packed >> (N * 8));
 }
 
 template <int N>
@@ -21,8 +21,8 @@ inline int8_t unpack_s(uint32_t packed) {
 	return (r <= 127 ? r : r - 256); // thanks to caf
 }
 template<typename T>
-inline char* unpack_str4(T val){
-	char *ss=(char*)calloc(5, sizeof(char));
+inline char* unpack_str4(T val) {
+	char *ss = (char*)calloc(5, sizeof(char));
 	ss[0] = unpack_s<3>(val);
 	ss[1] = unpack_s<2>(val);
 	ss[2] = unpack_s<1>(val);
@@ -38,57 +38,71 @@ inline char* unpack_str4(T val){
 #include <vector>
 inline std::string ReplaceAll(std::string str, const std::string& from, const std::string& to) {
 	size_t start_pos = 0;
-	while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
 		str.replace(start_pos, from.length(), to);
 		start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
 	}
 	return str;
 }
 template<typename T>
-inline void dodump(std::vector<T> &curline){
-	printf("\n");
-	for(size_t j=0;j<curline.size();j++){
-		char* ss = unpack_str4(curline.at(j));
+inline void dodump(std::vector<T> &curline, int &skipOpcodeNames) {
+	for (size_t j = 0; j < curline.size(); j++) {
+		if (skipOpcodeNames > 0)skipOpcodeNames--;
+		if (curline.at(j) < OPCODES::END && skipOpcodeNames == 0) {
+			auto autoname = get_opcode_name((OPCODES)curline.at(j));
+			skipOpcodeNames = get_n_params((OPCODES)curline.at(j)) + 1;
+			printf("%s  ", str::padtolen(autoname, 8).c_str());
+		}
+		else {
+			char* ss = unpack_str4(curline.at(j));
 #define rplchr(num) do{ char ccc=ss[num]; if(ccc!='\0'&&(ccc<33||ccc>122))ss[num]='#'; }while(0);
-		rplchr(0);
-		rplchr(1);
-		rplchr(2);
-		rplchr(3);
-		printf("%c %c %c %c  ",ss[0],ss[1],ss[2],ss[3]);
+			rplchr(0);
+			rplchr(1);
+			rplchr(2);
+			rplchr(3);
+			printf("%c %c %c %c  ", ss[0], ss[1], ss[2], ss[3]);
+		}
 	}
 	curline.clear();
 	std::cout << std::endl;
 }
 template<typename T>
-inline void hexDump(char* desc, T *addr, int len, int linelen=6){
+inline void hexDump(char* desc, T *addr, int len, int linelen = 6) {
 	std::cout << desc << std::endl;
 	std::vector<T> curline;
-	for(int i=0;i<len;i++){
-		T c=addr[i];
+	int skippers = 0, i = 0;
+	printf("00: ");
+	for (i = 0; i < len; i++) {
+		T c = addr[i];
 		printf("%08x ", c);
 		curline.push_back(c);
-		if(i % linelen==0&&i>0){
-			
-			dodump(curline);
+		if (i % linelen == 0 && i > 0) {
+			printf("\n%02i: ", i - linelen);
+			dodump(curline, skippers);
+			printf("%02i: ", i);
 		}
 	}
-	std::cout << std::endl;
+	if (curline.size() > 0) {
+		printf("\n%02i: ", i - linelen);
+		dodump(curline, skippers);
+	}
+	std::cout << std::endl << std::endl;
 }
-inline void _hexDump (char *desc, void *addr, int len) {
+inline void _hexDump(char *desc, void *addr, int len) {
 	int i;
 	unsigned char buff[17];
 	unsigned char *pc = (unsigned char*)addr;
 
 	// Output description if given.
 	if (desc != NULL)
-		printf ("%s:\n", desc);
+		printf("%s:\n", desc);
 
 	if (len == 0) {
 		printf("  ZERO LENGTH\n");
 		return;
 	}
 	if (len < 0) {
-		printf("  NEGATIVE LENGTH: %i\n",len);
+		printf("  NEGATIVE LENGTH: %i\n", len);
 		return;
 	}
 
@@ -99,14 +113,14 @@ inline void _hexDump (char *desc, void *addr, int len) {
 		if ((i % 16) == 0) {
 			// Just don't print ASCII for the zeroth line.
 			if (i != 0)
-				printf ("  %s\n", buff);
+				printf("  %s\n", buff);
 
 			// Output the offset.
-			printf ("  %04x ", i);
+			printf("  %04x ", i);
 		}
 
 		// Now the hex code for the specific character.
-		printf (" %02x", pc[i]);
+		printf(" %02x", pc[i]);
 
 		// And store a printable ASCII character for later.
 		if ((pc[i] < 0x20) || (pc[i] > 0x7e))
@@ -118,12 +132,12 @@ inline void _hexDump (char *desc, void *addr, int len) {
 
 	// Pad out last line if not exactly 16 characters.
 	while ((i % 16) != 0) {
-		printf ("   ");
+		printf("   ");
 		i++;
 	}
 
 	// And print the final ASCII bit.
-	printf ("  %s\n", buff);
+	printf("  %s\n", buff);
 }
 
 inline unsigned long _hash_sdbm(unsigned char *str)

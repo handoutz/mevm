@@ -98,10 +98,11 @@ inline InlineString* next_str(virtuo *v, BASE_TYPE *program, int &sz, int &iPtr)
 }
 void virtuo::run(BASE_TYPE *program, int sz)
 {
-	preparse(program, sz);
 	hexDump("Running this program", program, sz);
 	printf("\n---------------------------\n");
+	preparse(program, sz);
 	int iPtr = -1;
+	bool was_main_run = false;
 	PLabel* curLabel = nullptr;
 	do {
 		iPtr++;
@@ -186,9 +187,15 @@ void virtuo::run(BASE_TYPE *program, int sz)
 		}
 		case LBL_START: {
 			auto lbl = findlabel(nxtchar);
-			do {
-				_cur = nxtchar;
-			} while (_cur != LBL_END);
+			if (lbl&&lbl->m_hash == _hash_sdbm((unsigned char*)"main")
+				&&!was_main_run) {
+				was_main_run = true;
+			}
+			else {
+				do {
+					_cur = nxtchar;
+				} while (_cur != LBL_END);
+			}
 			break;
 		}
 		case SYSCALL: {
