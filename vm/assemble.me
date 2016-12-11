@@ -1,18 +1,27 @@
-;opcode(LOADI)->regi(0)->immediate(sizeof(unsigned long))->
-;opcode(LOADI)->regi(1)->immediate(sizeof(BASE_TYPE))->
-;subroutine("lol")->
-;opcode(LOADS)->strRegi(2)->s("Hello, subroutine world!")->
-;opcode(PUSHI)->strRegi(2)->
-;syscall(WRITEL)->
-;opcode(RET)->finish()->
+# 1 "preparing.tmp"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "preparing.tmp"
+
+# 1 "./stdlib.me" 1
+# 3 "preparing.tmp" 2
 
 main:
-	LOADI r0 @4
-	LOADI r1 @4
-	CALL lol
-	RET
+ CALL lol
+ RET
 lol:
-	LOADS sr2 "Hello, sub world!"
-	PUSHI sr2
-	SYSCALL #WRITEL
-	RET
+ LOADS sr1 "What is your name? "
+ PUSHI sr1
+ PUSHI sr0
+ SYSCALL @GETLINE
+
+ LOADS sr1 "Hello, "
+ PUSHI sr1
+ SYSCALL @WRITES
+
+ PUSHI sr0
+ SYSCALL @WRITES
+
+ LOADS sr4 ", how are you?"
+ PUSHI sr4
+ SYSCALL @WRITES

@@ -4,6 +4,14 @@
 #include <fstream>
 #include <sstream>
 
+class pmacro {
+private:
+	string m_name;
+public:
+	string name() const { return m_name; }
+
+};
+
 class parser
 {
 public:

@@ -4,7 +4,7 @@
 #include "packer.h"
 using namespace std;
 
-virtuo::virtuo(void)
+virtuo::virtuo(void) :m_curStrId(5050)
 {
 	m_registers = new Register<BASE_TYPE>[N_REGISTERS];
 	m_strRegisters = new Register<StrPart>[N_REGISTERS];
@@ -42,13 +42,13 @@ void virtuo::dmpState()
 #define nxtchar program[++iPtr]
 void virtuo::preparse(BASE_TYPE *program, int sz)
 {
-	int iPtr = -1, curStrId = 5;
+	int iPtr = -1;
 	do {
 		iPtr++;
 		BASE_TYPE _cur = program[iPtr];
 		if (_cur == INLINE_STR_START) {
 			program[iPtr] = INLINE_ID_REF;
-			InlineString *_is = new InlineString(curStrId++);
+			InlineString *_is = new InlineString(m_curStrId++);
 			BASE_TYPE curchr = nxtchar;
 			program[iPtr] = _is->m_id;
 			do {
@@ -75,13 +75,12 @@ void virtuo::preparse(BASE_TYPE *program, int sz)
 		}
 	} while (iPtr < sz);
 }
-inline InlineString* next_str(virtuo *v, BASE_TYPE *program, int &sz, int &iPtr) {
+InlineString* virtuo::next_str(virtuo *v, BASE_TYPE *program, int &sz, int &iPtr) {
 	InlineString* nxt = nullptr;
 	BASE_TYPE c = nxtchar;
 	if (c == INLINE_ID_REF) {
 		BASE_TYPE id = nxtchar;
 		if (v->findstr(id, nxt)) {
-
 			return nxt;
 		}
 		else {
@@ -94,16 +93,27 @@ inline InlineString* next_str(virtuo *v, BASE_TYPE *program, int &sz, int &iPtr)
 		curchr = nxtchar;
 		} while (curchr != INLINE_STR_END);*/
 	}
+	else if (c == INLINE_STR_START) {
+		BASE_TYPE curchr = nxtchar;
+		nxt = new InlineString(m_curStrId++);
+		do {
+			if (curchr != INLINE_STR_START)
+				nxt->val.append(curchr);
+			curchr = nxtchar;
+		} while (curchr != INLINE_STR_END);
+	}
 	return NULL;
 }
+#include "Syscalls.h"
 void virtuo::run(BASE_TYPE *program, int sz)
 {
+	preparse(program, sz);
 	hexDump("Running this program", program, sz);
 	printf("\n---------------------------\n");
-	preparse(program, sz);
 	int iPtr = -1;
 	bool was_main_run = false;
 	PLabel* curLabel = nullptr;
+	Syscalls sysCalls(this);
 	do {
 		iPtr++;
 		BASE_TYPE _cur = program[iPtr];
@@ -188,7 +198,7 @@ void virtuo::run(BASE_TYPE *program, int sz)
 		case LBL_START: {
 			auto lbl = findlabel(nxtchar);
 			if (lbl&&lbl->m_hash == _hash_sdbm((unsigned char*)"main")
-				&&!was_main_run) {
+				&& !was_main_run) {
 				was_main_run = true;
 			}
 			else {
@@ -200,19 +210,7 @@ void virtuo::run(BASE_TYPE *program, int sz)
 		}
 		case SYSCALL: {
 			BASE_TYPE callnum = nxtchar;
-			BASE_TYPE rnum = 0;
-			switch (callnum) {
-			case WRITEL:
-				if (stack_pop(rnum)) {
-					printf("WRITEL: %s\n", strregi(rnum)->m_value.str());
-				}
-				break;
-			case WRITEVAL:
-				if (stack_pop(rnum)) {
-					printf("R#%i = %i", rnum, regi(rnum)->m_value);
-				}
-				break;
-			}
+			sysCalls.route_call(callnum);
 			break;
 		}
 		case CALL: {

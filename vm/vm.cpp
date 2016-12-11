@@ -14,7 +14,24 @@ int _tmain(int argc, _TCHAR* argv[])
 		auto program=p.parse_file("assemble.me", sz);
 		//hexDump("assemble.me parsed:", proggy, sz);
 		assemblr a;
-		BASE_TYPE *refPRof = a.
+		BASE_TYPE* pp= a.
+			subroutine("main")->call("lol")->opcode(RET)->finish()->
+			subroutine("lol")->
+			opcode(LOADS)->strRegi(1)->s("What's your name?")->
+			opcode(PUSHI)->strRegi(1)->
+			opcode(PUSHI)->strRegi(0)->
+			syscall(GETLINE)->
+			opcode(LOADS)->strRegi(1)->s("Hello, ")->
+			opcode(PUSHI)->strRegi(1)->
+			syscall(WRITES)->
+			opcode(PUSHI)->strRegi(0)->
+			syscall(WRITES)->
+			opcode(LOADS)->strRegi(1)->s(", how are you?")->
+			opcode(PUSHI)->strRegi(1)->
+			syscall(WRITES)->
+			opcode(RET)->finish()->
+			assemble(sz);
+		/*BASE_TYPE *program = a.
 			subroutine("main")->
 			opcode(LOADI)->regi(0)->immediate(4)->
 			opcode(LOADI)->regi(1)->immediate(4)->
@@ -23,6 +40,10 @@ int _tmain(int argc, _TCHAR* argv[])
 			subroutine("lol")->
 			opcode(LOADS)->strRegi(2)->s("Hello, sub world!")->
 			opcode(PUSHI)->strRegi(2)->
+			syscall(WRITEL)->
+			opcode(PUSHI)->strRegi(1)->
+			syscall(GETLINE)->
+			opcode(PUSHI)->strRegi(1)->
 			syscall(WRITEL)->
 			opcode(RET)->finish()->
 			assemble(sz);

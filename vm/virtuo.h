@@ -85,6 +85,9 @@ public:
 	}
 	void dmpState();
 	void preparse(BASE_TYPE *program, int sz);
+	InlineString* next_str(virtuo *v, BASE_TYPE *program, int &sz, int &iPtr);
 	void run(BASE_TYPE *program, int sz);
+private:
+	BASE_TYPE m_curStrId;
 };
 

@@ -1,5 +1,3 @@
-﻿  parser.cpp
-c:\users\innat\documents\visual studio 2017\projects\vm\vm\parser.cpp(52): warning C4018: '<': signed/unsigned mismatch
-c:\users\innat\documents\visual studio 2017\projects\vm\vm\parser.cpp(111): warning C4102: 'skip': unreferenced label
+﻿  vm.cpp
   vm.vcxproj -> C:\Users\innat\Documents\Visual Studio 2017\Projects\vm\Debug\vm.exe
   vm.vcxproj -> C:\Users\innat\Documents\Visual Studio 2017\Projects\vm\Debug\vm.pdb (Partial PDB)

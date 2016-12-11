@@ -1,0 +1,124 @@
+#pragma once
+#include <string>
+using namespace std;
+/*[[[cog
+import cog
+
+
+class NameDesc:
+    name = ""
+    desc = ""
+    val = 0
+
+    def __init__(self, n, d, v, ex):
+        self.name = n
+        self.desc = d
+        self.val = v
+        self.example = ex
+i = 0
+ndlst = []
+
+
+def _out_opc(name, desc, i, ex=""):
+    cog.outl("%s=%i,\t\t\t//%s\t%s" % (name.upper(), i, desc, ex))
+
+
+def opc(name, desc, ex=""):
+    global i
+    global ndlst
+    ndlst.append(NameDesc(name, desc, i, ex))
+    i += 1
+
+
+def opcs(names, desc, ex=""):
+    for o in names:
+        opc(o, desc, ex)
+
+def dooutputs():
+    global ndlst
+    cog.outl("typedef enum {")
+    for nd in ndlst:
+        _out_opc(nd.name,nd.desc,nd.val,nd.example)
+    cog.outl("} OPCODES;")
+
+    cog.outl("inline char* get_opcode_name(OPCODES oc){")
+    inum=0
+    for nd in ndlst:
+        cog.outl("%s(oc==%s)return \"%s\";"%("if" if inum==0 else "else if", nd.val, nd.name))
+        inum+=1
+    cog.outl("else return \"UNKNOWN\";}")
+
+    cog.outl("inline int get_n_params(OPCODES oc){")
+    inum=0
+    for nd in ndlst:
+        cog.outl("%s(oc==%s)return %i;"%("if" if inum==0 else "else if", nd.val, len(nd.example.split(' '))-1))
+        inum+=1
+    cog.outl("else return 0;}")
+    cog.out("//list of opcodes: [")
+    for nd in ndlst:
+        cog.out("%s, "%nd.name)
+    cog.outl("]")
+
+opc("NOP", "no operation")
+opc("MOV", "value from r0->r1", "MOV r0 r1")
+opc("LOADI", "loads iv into r#", "LOADI r0 r1")
+opc("LOADS", "loads str into sr#", "LOADS sr0 \"HELLO\"")
+opcs(["INC", "DEC", "ADD", "SUB", "MUL", "DIV"],
+     "increment r#, decrement r#, adds/subtr/mults/divides r# r# into REG_RESULT", "ADD r0 r1")
+opc("SWP", "swaps two register's values", "SWP r0 r1")
+
+opc("POP", "pops the stack into r#", "POP r#")
+opc("PUSH", "push a register value;", "PUSH r#")
+opc("PUSHI", "push an immediate to r#", "PUSH 0")
+
+opc("SYSCALL", "does a syscall", "ex: SYSCALL #WRITEL")
+opc("CALL", "calls a label with name", "CALL lblname")
+opc("RET", "returns to the calling funk", "RET")
+opc("INLINE_STR_START", "INTERNAL")
+opc("INLINE_STR_END", "INTERNAL")
+opc("INLINE_ID_REF", "INTERNAL")
+opc("END", "the end")
+dooutputs()
+
+class _sysCall:
+	name=""
+	desc=""
+	example=""
+	val=0
+	def __init__(self, n, d, ex, i):
+		self.name = n
+		self.desc = d
+		self.example = ex
+		self.val = i
+cog.outl("typedef enum{")
+scalls=[
+	_sysCall("WRITEVAL", "Writes a register value to screen", "@WRITEVAL r0",0),
+	_sysCall("WRITEL","Writes a line to screen", "@WRITEL sr0",1),
+	_sysCall("WRITES","Writes a string to screen", "@WRITES sr0",2),
+	_sysCall("GETLINE", "Gets a line from stdinput", "@GETLINE sr0",3)
+]
+for sc in scalls:
+	cog.outl("%s,\t\t//%s\t%s" % (sc.name, sc.desc, sc.example))
+cog.outl("} SYSCALLS;");
+
+cog.outl("inline int get_syscall_val(string ss){if(ss.size()<1)return -1;")
+cog.outl("if(ss[0]=='@')ss=ss.substr(1);")
+inum=0
+for sc in scalls:
+	cog.outl("%s(ss==\"%s\")return %i;"%
+		("if" if inum==0 else "else if", 
+		sc.name, sc.val))
+	inum+=1
+cog.outl("else return -1;}")
+
+]]]*/
+//[[[end]]]
+//terms: iv: immediate value
+
+typedef enum {
+	REG_RETVAL = 50, REG_ACCUMULATE, REG_RESULT
+} SPECIAL_REGISTERS;
+
+typedef enum {
+	LBL_START = END, LBL_END
+} KEYWORDS;
