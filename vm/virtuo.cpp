@@ -1,10 +1,11 @@
 #include "StdAfx.h"
+#include "parser.h"
 #include <iostream>
 #include "virtuo.h"
 #include "packer.h"
 using namespace std;
 
-virtuo::virtuo(void) :m_curStrId(5050)
+virtuo::virtuo(void) :m_curStrId(5050), last_cmp_result(-1)
 {
 	m_registers = new Register<BASE_TYPE>[N_REGISTERS];
 	m_strRegisters = new Register<StrPart>[N_REGISTERS];
@@ -38,8 +39,14 @@ void virtuo::dmpState()
 		//cout << "stack value [" << val << "]"<<endl;
 	}
 }
+inline BASE_TYPE _nxtchar(BASE_TYPE *program, int &iPtr) {
+	auto i = program[++iPtr];
+	//hexDump("a", program, 1,6,iPtr);
+	//printf("%08x [%s]\n", i, get_opcode_name((OPCODES)i));
+	return i;
+}
+#define nxtchar _nxtchar(program,iPtr)
 
-#define nxtchar program[++iPtr]
 void virtuo::preparse(BASE_TYPE *program, int sz)
 {
 	int iPtr = -1;
@@ -112,11 +119,11 @@ void virtuo::run(BASE_TYPE *program, int sz)
 	printf("\n---------------------------\n");
 	int iPtr = -1;
 	bool was_main_run = false;
-	PLabel* curLabel = nullptr;
+	//PLabel* curLabel = nullptr;
 	Syscalls sysCalls(this);
 	do {
-		iPtr++;
-		BASE_TYPE _cur = program[iPtr];
+		//iPtr++;
+		BASE_TYPE _cur = nxtchar;
 		switch (_cur) {
 		case NOP: {
 			continue;
@@ -200,6 +207,7 @@ void virtuo::run(BASE_TYPE *program, int sz)
 			if (lbl&&lbl->m_hash == _hash_sdbm((unsigned char*)"main")
 				&& !was_main_run) {
 				was_main_run = true;
+				m_callStack.push_stack(lbl, sz);
 			}
 			else {
 				do {
@@ -214,21 +222,60 @@ void virtuo::run(BASE_TYPE *program, int sz)
 			break;
 		}
 		case CALL: {
-			curLabel = findlabel(nxtchar);
+			PLabel* curLabel = findlabel(nxtchar);
+			m_callStack.push_stack(curLabel, iPtr);
 			//printf("calling lbl %X\n", curLabel->m_hash);
-			curLabel->setret(iPtr + 1);
+			//curLabel->setret(iPtr + 1);
 			iPtr = curLabel->m_iPtr;
 			break;
 		}
 		case RET: {
-			if (curLabel == nullptr) {
+			CallStaxInfo csiCur = m_callStack.curframe(),
+				csiNxt = { 0,0 };
+			auto curf = csiCur;
+			/*printf("popping from mtd [%s:%i] -> ", 
+				parser::getlblname(curf.m_lbl->m_hash).c_str(), 
+				csiCur.m_retLoc);*/
+			if (m_callStack.popo(csiNxt)) {
+				/*printf("[%s:%i]\n", 
+					parser::getlblname(csiNxt.m_lbl->m_hash).c_str(), 
+					csiNxt.m_retLoc);*/
 			}
-			else {
-				iPtr = curLabel->retloc();
-				curLabel->setret(0);
-				curLabel = nullptr;
-			}
+			iPtr = csiCur.m_retLoc;
+			break;
+		}
+#define JUMPCASE(opc, CMPCODE)\
+auto curLabel=findlabel(nxtchar);\
+if(!(last_cmp_result&CMPCODE)){\
+	break;\
+}\
+m_callStack.push_stack(curLabel, iPtr);\
+iPtr=curLabel->m_iPtr;
 
+		case JE: {
+			JUMPCASE(JE, CMP_EQS);
+			break;
+		}
+		case JNE: {
+			JUMPCASE(JNE, CMP_NEQS);
+			break;
+		}
+		case JGT: {
+			JUMPCASE(JGT, CMP_GT);
+			break;
+		}
+		case JLT: {
+			JUMPCASE(JLT, CMP_LT);
+			break;
+		}
+		case CMP: {
+			auto _r0 = regi(nxtchar), _r1 = regi(nxtchar);
+			auto r0 = _r0->get(), r1 = _r1->get();
+			last_cmp_result = 0;
+			if (r0 == r1)last_cmp_result |= CMP_EQS;
+			if (r0 != r1)last_cmp_result |= CMP_NEQS;
+			if (r0 > r1)last_cmp_result |= CMP_GT;
+			if (r0 < r1)last_cmp_result |= CMP_LT;
 			break;
 		}
 		}

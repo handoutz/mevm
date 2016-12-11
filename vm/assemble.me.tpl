@@ -20,3 +20,4 @@ lol:
 	LOADS sr4 ", how are you?"
 	PUSHI sr4
 	SYSCALL @WRITES
+	RET

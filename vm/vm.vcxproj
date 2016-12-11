@@ -79,6 +79,7 @@
     <None Include="assemble.me.tpl">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
     </None>
+    <None Include="conditionals.me.tpl" />
     <None Include="ReadMe.txt" />
     <None Include="stdlib.me" />
   </ItemGroup>
@@ -96,6 +97,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="virtuo.h" />
     <ClInclude Include="VMException.h" />
+    <ClInclude Include="_tests.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="assembler.cpp" />

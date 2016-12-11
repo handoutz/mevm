@@ -10,6 +10,22 @@ parser::parser()
 parser::~parser()
 {
 }
+
+std::map<BASE_TYPE, std::string> parser::m_lblmap;
+
+void parser::pushlbl(BASE_TYPE hsh, string na)
+{
+	m_lblmap[hsh] = na;
+}
+
+std::string parser::getlblname(BASE_TYPE hsh)
+{
+	auto res = m_lblmap.find(hsh);
+	if (res != m_lblmap.end())
+		return res->second;
+	return "UNKNOWN";
+}
+
 inline BASE_TYPE rnum(string c) {
 	if (c.size() < 1)return -1;
 	if (c[0] == 'r')
@@ -62,6 +78,7 @@ BASE_TYPE * parser::parse(const char* texts, int &sz)
 			auto frst = split[0];
 			if (frst[frst.size() - 1] == ':') {
 				frst = frst.substr(0, frst.size() - 1);
+				pushlbl(_hash_sdbm((unsigned char*)frst.c_str()), frst);
 				//printf("frst=%s\n", frst.c_str());
 				cursub = a.subroutine(frst.c_str());
 			}
@@ -130,6 +147,16 @@ BASE_TYPE * parser::parse(const char* texts, int &sz)
 			PARSE_CASE(POP) {
 				getptr(cura, cursub)->opcode(POP)->regi(rnum(split[1]));
 			}
+			PARSE_CASE(CMP) {
+				getptr(cura, cursub)->opcode(CMP)->
+					regi(rnum(split[1]))->regi(rnum(split[2]));
+			}
+#define jmpcase(opc) PARSE_CASE(opc){\
+getptr(cura, cursub)->opcode(opc)->lblname(split[1].c_str());}
+			jmpcase(JE)
+				jmpcase(JNE)
+				jmpcase(JLT)
+				jmpcase(JGT)
 		}
 	}
 	if (cursub != nullptr) {

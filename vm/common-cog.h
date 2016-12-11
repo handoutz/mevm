@@ -1,70 +1,81 @@
 #pragma once
 #include <string>
 using namespace std;
+typedef enum {
+	REG_RETVAL = 50, REG_ACCUMULATE, REG_RESULT
+} SPECIAL_REGISTERS;
+
 /*[[[cog
 import cog
 
 
 class NameDesc:
-    name = ""
-    desc = ""
-    val = 0
+	name = ""
+	desc = ""
+	val = 0
 
-    def __init__(self, n, d, v, ex):
-        self.name = n
-        self.desc = d
-        self.val = v
-        self.example = ex
+	def __init__(self, n, d, v, ex):
+		self.name = n
+		self.desc = d
+		self.val = v
+		self.example = ex
 i = 0
 ndlst = []
 
 
 def _out_opc(name, desc, i, ex=""):
-    cog.outl("%s=%i,\t\t\t//%s\t%s" % (name.upper(), i, desc, ex))
+	cog.outl("%s=%i,\t\t\t//%s\t%s" % (name.upper(), i, desc, ex))
 
 
 def opc(name, desc, ex=""):
-    global i
-    global ndlst
-    ndlst.append(NameDesc(name, desc, i, ex))
-    i += 1
+	global i
+	global ndlst
+	ndlst.append(NameDesc(name, desc, i, ex))
+	i += 1
 
 
 def opcs(names, desc, ex=""):
-    for o in names:
-        opc(o, desc, ex)
+	for o in names:
+		opc(o, desc, ex)
 
 def dooutputs():
-    global ndlst
-    cog.outl("typedef enum {")
-    for nd in ndlst:
-        _out_opc(nd.name,nd.desc,nd.val,nd.example)
-    cog.outl("} OPCODES;")
+	global ndlst
+	cog.outl("typedef enum {")
+	for nd in ndlst:
+		_out_opc(nd.name,nd.desc,nd.val,nd.example)
+	cog.outl("} OPCODES;")
 
-    cog.outl("inline char* get_opcode_name(OPCODES oc){")
-    inum=0
-    for nd in ndlst:
-        cog.outl("%s(oc==%s)return \"%s\";"%("if" if inum==0 else "else if", nd.val, nd.name))
-        inum+=1
-    cog.outl("else return \"UNKNOWN\";}")
+	cog.outl("typedef enum {")
+	for nd in ["LBL_START=END","LBL_END"]:
+		cog.outl("%s,"%nd)
+	cog.outl("} KEYWORDS;")
 
-    cog.outl("inline int get_n_params(OPCODES oc){")
-    inum=0
-    for nd in ndlst:
-        cog.outl("%s(oc==%s)return %i;"%("if" if inum==0 else "else if", nd.val, len(nd.example.split(' '))-1))
-        inum+=1
-    cog.outl("else return 0;}")
-    cog.out("//list of opcodes: [")
-    for nd in ndlst:
-        cog.out("%s, "%nd.name)
-    cog.outl("]")
+	cog.outl("inline char* get_opcode_name(OPCODES oc){")
+	inum=0
+	for nd in ndlst:
+		cog.outl("%s(oc==%s)return \"%s\";"%("if" if inum==0 else "else if", nd.val, nd.name))
+		inum+=1
+	cog.outl("else if(oc==LBL_START)return \"LBL_START\";")
+	cog.outl("else if(oc==LBL_END)return \"LBL_END\";")
+	cog.outl("else return \"UNKNOWN\";}")
+
+	cog.outl("inline int get_n_params(OPCODES oc){")
+	inum=0
+	for nd in ndlst:
+		cog.outl("%s(oc==%s)return %i;"%("if" if inum==0 else "else if", nd.val, len(nd.example.split(' '))-1))
+		inum+=1
+	cog.outl("else return 0;}")
+	cog.out("//list of opcodes: [")
+	for nd in ndlst:
+		cog.out("%s, "%nd.name)
+	cog.outl("]")
 
 opc("NOP", "no operation")
 opc("MOV", "value from r0->r1", "MOV r0 r1")
 opc("LOADI", "loads iv into r#", "LOADI r0 r1")
 opc("LOADS", "loads str into sr#", "LOADS sr0 \"HELLO\"")
 opcs(["INC", "DEC", "ADD", "SUB", "MUL", "DIV"],
-     "increment r#, decrement r#, adds/subtr/mults/divides r# r# into REG_RESULT", "ADD r0 r1")
+	 "increment r#, decrement r#, adds/subtr/mults/divides r# r# into REG_RESULT", "ADD r0 r1")
 opc("SWP", "swaps two register's values", "SWP r0 r1")
 
 opc("POP", "pops the stack into r#", "POP r#")
@@ -77,6 +88,11 @@ opc("RET", "returns to the calling funk", "RET")
 opc("INLINE_STR_START", "INTERNAL")
 opc("INLINE_STR_END", "INTERNAL")
 opc("INLINE_ID_REF", "INTERNAL")
+opc("CMP", "Compare r#<->r#", "CMP r0 r1")
+opc("JE","Jump if equals", "JE lbl")
+opc("JNE","Jump if not eq", "JNE lbl")
+opc("JGT","Jump if r0 > r1", "JGT lbl")
+opc("JLT","Jump if r0 < r1", "JLT")
 opc("END", "the end")
 dooutputs()
 
@@ -115,10 +131,7 @@ cog.outl("else return -1;}")
 //[[[end]]]
 //terms: iv: immediate value
 
-typedef enum {
-	REG_RETVAL = 50, REG_ACCUMULATE, REG_RESULT
-} SPECIAL_REGISTERS;
-
-typedef enum {
-	LBL_START = END, LBL_END
-} KEYWORDS;
+#define CMP_EQS 0x01
+#define CMP_NEQS 0x02
+#define CMP_LT 0x04
+#define CMP_GT 0x08

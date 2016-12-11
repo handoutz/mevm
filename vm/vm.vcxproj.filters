@@ -25,6 +25,7 @@
     <None Include="stdlib.me">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="conditionals.me.tpl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -64,6 +65,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Syscalls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="_tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,0 +1,25 @@
+# 1 "preparing.tmp"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "preparing.tmp"
+# 1 "./stdlib.me" 1
+# 2 "preparing.tmp" 2
+main:
+ LOADI r0 @1
+ LOADI r1 @1
+ CALL dotest
+ LOADI r0 @1
+ LOADI r1 @2
+ CALL dotest
+ RET
+dotest:
+ CMP r0 r1
+ JE eqs
+ JNE neqs
+ RET
+eqs:
+ LOADS sr1 "dey eqals";;PUSHI sr1;;SYSCALL @WRITEL
+ RET
+neqs:
+ LOADS sr1 "dey not eq";;PUSHI sr1;;SYSCALL @WRITEL
+ RET

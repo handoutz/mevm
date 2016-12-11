@@ -28,6 +28,11 @@ public:
 	assemblr* call(const char* _name) {
 		return call((char*)_name);
 	}
+	assemblr* lblname(char* _name) {
+		immediate(_hash_sdbm((unsigned char*)_name));
+		return this;
+	}
+	assemblr* lblname(const char* _name) { return lblname((char*)_name); }
 	assemblr* syscall(SYSCALLS sc);
 	assemblr* opcode(OPCODES op);
 	assemblr* kw(KEYWORDS kw);

@@ -44,17 +44,24 @@ inline std::string ReplaceAll(std::string str, const std::string& from, const st
 	}
 	return str;
 }
+#include "parser.h"
 template<typename T>
-inline void dodump(std::vector<T> &curline, int &skipOpcodeNames) {
+inline void dodump(std::vector<T> &curline, int &skipOpcodeNames, BASE_TYPE& lastopcode) {
 	for (size_t j = 0; j < curline.size(); j++) {
+		BASE_TYPE currentBt = curline.at(j);
 		if (skipOpcodeNames > 0)skipOpcodeNames--;
 		if (curline.at(j) < OPCODES::END && skipOpcodeNames == 0) {
-			auto autoname = get_opcode_name((OPCODES)curline.at(j));
-			skipOpcodeNames = get_n_params((OPCODES)curline.at(j)) + 1;
+			lastopcode = curline.at(j);
+			auto autoname = get_opcode_name((OPCODES)lastopcode);
+			skipOpcodeNames = get_n_params((OPCODES)lastopcode) + 1;
 			printf("%s  ", str::padtolen(autoname, 8).c_str());
 		}
+		else if (lastopcode == CALL || (lastopcode >= JE || lastopcode <= JLT)) {
+			auto lblname = parser::getlblname(currentBt);
+			printf("%s  ", str::padtolen(lblname, 8).c_str());
+		}
 		else {
-			char* ss = unpack_str4(curline.at(j));
+			char* ss = unpack_str4(currentBt);
 #define rplchr(num) do{ char ccc=ss[num]; if(ccc!='\0'&&(ccc<33||ccc>122))ss[num]='#'; }while(0);
 			rplchr(0);
 			rplchr(1);
@@ -67,24 +74,25 @@ inline void dodump(std::vector<T> &curline, int &skipOpcodeNames) {
 	std::cout << std::endl;
 }
 template<typename T>
-inline void hexDump(char* desc, T *addr, int len, int linelen = 6) {
+inline void hexDump(char* desc, T *addr, int len, int linelen = 6, int start=0) {
 	std::cout << desc << std::endl;
 	std::vector<T> curline;
-	int skippers = 0, i = 0;
-	printf("00: ");
-	for (i = 0; i < len; i++) {
+	BASE_TYPE lastopc = -1;
+	int skippers = 0, i = start;
+	printf("%02i: ",i);
+	for (i = start; i < len; i++) {
 		T c = addr[i];
 		printf("%08x ", c);
 		curline.push_back(c);
 		if (i % linelen == 0 && i > 0) {
 			printf("\n%02i: ", i - linelen);
-			dodump(curline, skippers);
+			dodump(curline, skippers, lastopc);
 			printf("%02i: ", i);
 		}
 	}
 	if (curline.size() > 0) {
 		printf("\n%02i: ", i - linelen);
-		dodump(curline, skippers);
+		dodump(curline, skippers, lastopc);
 	}
 	std::cout << std::endl << std::endl;
 }

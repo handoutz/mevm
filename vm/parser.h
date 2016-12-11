@@ -11,12 +11,15 @@ public:
 	string name() const { return m_name; }
 
 };
-
+#include <map>
 class parser
 {
 public:
 	parser();
 	~parser();
+	static map<BASE_TYPE, string> m_lblmap;
+	static void pushlbl(BASE_TYPE hsh, string na);
+	static string getlblname(BASE_TYPE hsh);
 	BASE_TYPE *parse_file(const char* fname, int &sz) {
 		stringstream streem;
 		ifstream fso(fname);

@@ -1,4 +1,5 @@
 #pragma once
+#include "parser.h"
 #include "packer.h"
 #include <vector>
 #include "assembler.h"
@@ -21,6 +22,49 @@ public:
 	void setret(int loc) { m_retLoc = loc; }
 	int retloc() const { return m_retLoc; }
 	int m_endLoc;
+	const char* dump() {
+		stringstream ss;
+		ss << "label [" << parser::getlblname(m_hash) << "] start=" << m_iPtr << " end=" << m_endLoc << endl;
+		return ss.str().c_str();
+	}
+};
+struct CallStaxInfo {
+	PLabel* m_lbl;
+	int m_retLoc;
+};
+class CallStax {
+	stack<CallStaxInfo> m_stack;
+public:
+	void push_stack(PLabel* lbl, int iPtr) {
+		/*printf("pushing new frame: [%s:%i]\n",
+			parser::getlblname(lbl->m_hash).c_str(),
+			iPtr);*/
+		m_stack.push({ lbl, iPtr });
+	}
+	bool in_mtd() {
+		return m_stack.size() > 0;
+	}
+	CallStaxInfo curframe() {
+		if (m_stack.empty())return{ 0,0 };
+		return m_stack.top();
+	}
+	CallStaxInfo pop() {
+		CallStaxInfo info;
+		if (popo(info))
+		{
+			/*printf("popped frame: [%s:%i]\n",
+				parser::getlblname(info.m_lbl->m_hash).c_str(),
+				info.m_retLoc);*/
+			return info;
+		}
+		return{ 0,0 };
+	}
+	bool popo(CallStaxInfo& csi) {
+		m_stack.pop();
+		if (m_stack.empty())return false;
+		csi = m_stack.top();
+		return true;
+	}
 };
 class virtuo
 {
@@ -28,8 +72,10 @@ public:
 	Register<BASE_TYPE> *m_registers;
 	Register<StrPart> *m_strRegisters;
 	std::stack<BASE_TYPE> m_stack;
+	CallStax m_callStack;
 	std::vector<InlineString*> m_strings;
 	std::vector<PLabel*> m_labels;
+	int last_cmp_result;
 
 	virtuo(void);
 	~virtuo(void);
