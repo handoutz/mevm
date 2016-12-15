@@ -8,7 +8,7 @@ main:
 	CALL dotest
 	RET
 dotest:
-	CMP r0 r1
+	CMP r0 r1z
 	JE eqs
 	JNE neqs
 	RET

@@ -26,6 +26,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="conditionals.me.tpl" />
+    <None Include="hello.mel">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -70,6 +73,18 @@
     <ClInclude Include="_tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleUi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cui_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="conmanip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -94,6 +109,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Syscalls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleUi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

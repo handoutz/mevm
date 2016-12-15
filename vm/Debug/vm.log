@@ -1,10 +1,10 @@
 ﻿  vm.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
   virtuo.cpp
   parser.cpp
-c:\users\innat\documents\visual studio 2017\projects\vm\vm\parser.cpp(66): warning C4018: '<': signed/unsigned mismatch
-c:\users\innat\documents\visual studio 2017\projects\vm\vm\parser.cpp(71): warning C4018: '<': signed/unsigned mismatch
   assembler.cpp
   Syscalls.cpp
-  Generating Code...
+  ConsoleUi.cpp
   vm.vcxproj -> C:\Users\innat\Documents\Visual Studio 2017\Projects\vm\Debug\vm.exe
   vm.vcxproj -> C:\Users\innat\Documents\Visual Studio 2017\Projects\vm\Debug\vm.pdb (Partial PDB)
